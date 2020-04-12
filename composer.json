@@ -1,0 +1,26 @@
+{
+  "name": "ller/visualpredis",
+  "description": "没有什么描述, 底层是predis",
+  "keywords": [
+    "Predis",
+    "redis",
+    "php"
+  ],
+  "type": "library",
+  "require": {
+    "php": ">=7.0"
+  },
+  "minimum-stability": "dev",
+  "license": "MIT", 
+  "authors": [
+    {
+      "name": "Ller",
+      "email": "1846290637@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "MysqlDict\\": "src/"
+    }
+  }
+}
