@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="renderer" content="webkit"/>
+	<title>visualPredis</title>
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- vue -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script> -->
+	<script src="./front/js/vue-router.js"></script>
+	
+	<!-- axios -->
+	<script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+	<style>
+		/*基本样式*/
+		*{font-family: Georgia, "Times New Roman", Times, "Songti SC", serif; font-weight: 100 !important; user-select: none;}
+		a{color: #000000;text-decoration: none;}
+		a:link{text-decoration: none;}
+		a:hover{text-decoration: none;}
+		a:active{text-decoration: none;}
+		a:visited{text-decoration: none;}
+		ul{list-style: none;margin-top: 10px;}
+
+		/*重构bootstrap一些样式*/
+		.form-control{box-shadow: none !important;border-color: #e4e7ed;}
+		.form-control[disabled]{background-color: #f5f7fa;color: #c0c4cc;}
+
+		.panel-title{font-size: 20px; font-weight: normal;margin: 10px;}
+
+		.input-group-addon{background-color: #f5f7fa;border-color: #e4e7ed;}
+
+		.btn-primary{background-color: #409eff; border-color: #409eff;}
+		.btn-success{background-color: #67c23a; border-color: #67c23a;}
+		.btn-danger{background-color: #f56c6c; border-color: #f56c6c;}
+		.btn-default{border: 1px solid #dcdfe6;}
+
+		.alert-success{color: #67c23a;}
+	</style>
+</head>
+<body>
+	<div class="container-fluid" id="app">
+		<!-- 模态框（Modal） -->
+		<div class="modal fade" id="export" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		                <h4 class="modal-title" id="myModalLabel">Export</h4>
+		            </div>
+		            <div class="modal-body">
+		            	<p>逗号分割匹配条件，可使用通配符。示例：*list*,string </p>
+						<input v-model="export_keys" placeholder="请输入匹配规则，并以逗号分开，可使用通配符" class="form-control" type="text">
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		                <button @click="exportFile" type="button" class="btn btn-primary">确定</button>
+		            </div>
+		        </div><!-- /.modal-content -->
+		    </div><!-- /.modal -->
+		</div>
+		<!-- 模态框（Modal） -->
+		<div class="modal fade" id="import" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-header">
+		                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		                <h4 class="modal-title" id="myModalLabel">Import</h4>
+		            </div>
+		            <div class="modal-body">
+						<label for="upload" class="btn btn-default">{{ filename }}</label>
+						<input @change="importingFile($event.target)" style="display: none;" id="upload" type="file">
+		            </div>
+		            <div class="modal-footer">
+		                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		                <button @click="importFile" type="button" class="btn btn-primary">确定</button>
+		            </div>
+		        </div><!-- /.modal-content -->
+		    </div><!-- /.modal -->
+		</div>
+		<div class="row clearfix">
+			<div class="col-md-4" style="overflow-y: scroll;height: 99vh;">
+				<a href="./"><img style="width: 250px;" src="./front/image/logo.png" alt="PHP+Redis"></a>
+				<div class="panel panel-default">
+			        <div class="panel-heading"  style="background-color: #fff;padding: 0px;">
+			            <h4 class="panel-title">
+			            	<button class="btn btn-default" @click="foldFrame('collapseThree')">服务&emsp;{{ service_config[0] }}</button>
+			            	<button class="btn btn-default" @click="foldFrame('collapseOne')">数据库&emsp;db{{ current_db }}</button>
+							<div class="btn-group">
+								<button type="button" class="btn btn-default dropdown-toggle" 
+										data-toggle="dropdown">
+									<span class="glyphicon glyphicon-plus"></span>新增键
+								</button>
+								<ul class="dropdown-menu" role="menu">
+									<li><a href="#/create/string">STRING</a></li>
+									<li><a href="#/create/hash">HASH</a></li>
+									<li><a href="#/create/list">LIST</a></li>
+									<li><a href="#/create/set">SET</a></li>
+									<li><a href="#/create/zset">ZSET</a></li>
+								</ul>
+							</div>
+			            	<button class="btn btn-default" @click="foldFrame('collapseTwo')"><span class="glyphicon glyphicon-briefcase"></span>其它</button>
+			            </h4>
+			        </div>
+			        <div id="collapseOne" class="panel-collapse collapse">
+				        <div class="panel-body">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>dbname</th>
+										<th>keys</th>
+										<th>expires</th>
+										<th>avg_ttl</th>
+										<th>option</th>
+									</tr>
+								</thead>
+								<tbody v-for="(db, key, index) in database">
+									<tr>
+										<td>{{ key }}</td>
+										<td>{{ db.keys }}</td>
+										<td>{{ db.expires }}</td>
+										<td>{{ db.avg_ttl }}</td>
+										<td><button @click="switchDB(index)" class="btn btn-primary btn-sm">switch</button></td>
+									</tr>
+								</tbody>
+							</table>
+				        </div>
+			        </div> <!-- /#collapseOne -->
+
+			        <div id="collapseTwo" class="panel-collapse collapse">
+				        <div class="panel-body">
+				        	<a href="#/service" class="btn btn-default">
+								<span class="glyphicon glyphicon-cloud"></span>
+								新增服务
+							</a>
+							<button class="btn btn-default" data-toggle="modal" data-target="#import">
+								<span class="glyphicon glyphicon-import"></span>
+								导入
+							</button>
+							<button class="btn btn-default" data-toggle="modal" data-target="#export">
+								<span class="glyphicon glyphicon-export"></span>
+								导出
+							</button>
+							<a href="#/command" class="btn btn-default">
+								<span class="glyphicon glyphicon-send"></span>
+								命令
+							</a>
+							<a href="#/info" class="btn btn-default">
+								<span class="glyphicon glyphicon-info-sign"></span>
+								信息
+							</a>
+							<br><br>
+							<div class="input-group">
+					            <input v-model="rule" type="text" class="form-control">
+					            <span @click="matchedKeys" class="input-group-addon">自定义键匹配规则</span>
+					        </div>
+				        </div>
+			        </div> <!-- /#collapseTwo -->
+
+			        <div id="collapseThree" class="panel-collapse collapse">
+				        <div class="panel-body">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>option</th>
+									</tr>
+								</thead>
+								<tbody v-for="(item, index) in service_config">
+									<tr>
+										<td>{{ item }}</td>
+										<td><button @click="switchService(index)" class="btn btn-primary btn-sm">switch</button></td>
+									</tr>
+								</tbody>
+							</table>
+				        </div>
+			        </div> <!-- /#collapseThree -->
+			    </div> <!-- /.panel -->
+				<div id="alert">
+				    
+				</div> <!-- /#alert -->
+				<div>
+					<ul>
+						<template v-for="(item, index) in keys">
+							<!-- 判断它本身是否是一个键 -->
+							<li v-if="item.type != 'none'">
+								<p>&nbsp;</p>
+								<a :href="'#/edit/'+item.type+'/'+index">
+									<span class="glyphicon glyphicon-file"></span>
+									&emsp;{{ index }}
+									<span class="pull-right alert alert-info" style="font-size: 12px;padding: 3px;margin: 0;width: 60px;">&emsp;{{ item.type }}</span>
+								</a>
+							</li>
+							<!-- 判断它有没有子数据 -->
+							<li v-if="item.child != null">
+								<p>&nbsp;</p>
+								<span @click="showChildKey(index)" class="glyphicon" :class="[show_child_key.includes(index) ? 'glyphicon-folder-open' : 'glyphicon-folder-close']"></span>
+								&emsp;{{ index }}
+								<span class="pull-right alert alert-success" style="font-size: 12px;padding: 3px;margin: 0;width: 60px;">&emsp;group</span>
+								<Keys v-if="show_child_key.includes(index)" :val="item.child" :parent="index"></Keys>
+							</li>
+						</template>
+					</ul>
+				</div>
+			</div><!-- /.col-md-4  左面四格-->
+			<div class="col-md-8" style="height: 100vh;overflow-y: scroll;">
+				<router-view></router-view>
+			</div>
+		</div>
+	</div>
+	<!-- 路由主文件 -->
+	<script type="module" src="./front/router/main.js"></script>
+	<script src="./front/components/keys.js"></script>
+	<script src="./front/components/expire.js"></script>
+</body>
+</html>
