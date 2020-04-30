@@ -1,0 +1,12 @@
+{
+    "name": "ller/visualpredis",
+    "description": "This is a test project,rely on predis",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Ller-git",
+            "email": "1846290637@qq.com"
+        }
+    ],
+    "require": {}
+}

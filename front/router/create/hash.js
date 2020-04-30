@@ -79,7 +79,7 @@ const Chash = {
 		// 提交创建字段
 		submitHash: function() {
 			this.$redis.cHash(this.form).then((result)=>{
-				// console.log(result.data);
+				this.$parent.init();
 			})
 		},
 		// 移出字段

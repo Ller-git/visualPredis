@@ -2,11 +2,10 @@
 return	array (
   0 => 
   array (
-    'name' => 'localhost:6379',
-    'host' => 'localhost',
+    'name' => '123.56.127.153',
+    'host' => '123.56.127.153',
     'port' => '6379',
-    'password' => 123456,
-    'persistent' => false,
+    'password' => '',
   ),
   1 => 
   array (
@@ -15,5 +14,13 @@ return	array (
     'port' => '6389',
     'password' => 123456,
     'persistent' => true,
+  ),
+  2 => 
+  array (
+    'name' => 'localhost:6379',
+    'host' => 'localhost',
+    'port' => '6379',
+    'password' => 123456,
+    'persistent' => false,
   ),
 );

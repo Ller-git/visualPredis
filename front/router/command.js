@@ -44,6 +44,7 @@ const Command = {
 			this.$redis.command(this.command).then((result)=>{
 				this.result = {};
 				this.result = result.data.data;
+				this.$parent.init();
 			})
 		},
 		cleanUp: function() {
