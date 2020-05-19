@@ -37,8 +37,15 @@ class Select
 	public function database($request)
 	{
 		$redis = $request['redis'];
-		$response = $redis->info('Keyspace');
-		response($response);
+		$db_num =  $redis->config('get','databases');
+		$keyspace = $redis->info('Keyspace');
+		$response = array();
+		for ($i=0; $i<$db_num['databases']; $i++) { 
+			$name = 'db'.$i;
+			$response[$name] = $keyspace['Keyspace'][$name] ?? array('keys'=>0,'expires'=>0,'avg_ttl'=>0);
+		}
+		
+		return ['Keyspace'=>$response];
 	}
 
 

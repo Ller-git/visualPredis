@@ -1,9 +1,6 @@
 <?php
 include realpath('./class/expire.trait.php');
-/**
- * 优化
- * 当字段名为空的时候，需要给他一个默认的字段名，比如empty，这样前端显示的时候也可以正确显示
- */
+
 class Insert
 {
 	use Expire;

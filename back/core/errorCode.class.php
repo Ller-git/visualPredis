@@ -9,7 +9,7 @@ class ErrorCode
 	const FILE_NONEXISTS = [1002, '访问的文件不存在'];
 	const CLASS_NONEXISTS = [1003, '访问的类不存在'];
 	const FUNCTION_NONEXISTS = [1004, '访问的方法不存在'];
-	const UNDEFINED_KEYTYPE = [1005, '未定义的键的类型'];
+	const UNDEFINED_KEYTYPE = [1005, '未定义的键的类型，或不在当前操作的数据库'];
 
 	const UNKNOWN_ERROR = [1500, '未知错误'];
 }
